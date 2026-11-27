@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veyra AI</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #0b0b14;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 22px;
+  background: #151525;
+  border-bottom: 1px solid #292943;
+  color: #a78bfa;
+  font-size: 23px;
+  font-weight: bold;
+}
+main {
+  max-width: 750px;
+  margin: auto;
+  padding: 20px;
+}
+#welcome {
+  text-align: center;
+  margin-top: 100px;
+}
+#welcome h1 { color: #a78bfa; }
+#chat {
+  height: 55vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+.message {
+  background: #202035;
+  padding: 13px;
+  border-radius: 12px;
+  margin: 12px 0;
+  line-height: 1.5;
+}
+.user { background: #39305c; }
+form {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+}
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #393957;
+  background: #171725;
+  color: white;
+}
+button {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: #8b5cf6;
+  color: white;
+}
+</style>
+</head>
+<body>
+<header>✦ VEYRA AI</header>
+<main>
+<div id="welcome">
+<h1>Halo, saya Veyra.</h1>
+<p>Apa yang ingin kamu ketahui hari ini?</p>
+</div>
+<div id="chat"></div>
+<form id="form">
+<input id="message" placeholder="Ketik pesan..." autocomplete="off">
+<button type="submit">Kirim</button>
+</form>
+</main>
+<script>
+const form = document.getElementById("form");
+const input = document.getElementById("message");
+const chat = document.getElementById("chat");
+
+form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const message = input.value.trim();
+    if (!message) return;
+
+    const userMsg = document.createElement("div");
+    userMsg.className = "message user";
+    userMsg.textContent = message;
+    chat.appendChild(userMsg);
+
+    input.value = "";
+    input.disabled = true;
+
+    const aiMsg = document.createElement("div");
+    aiMsg.className = "message";
+    aiMsg.textContent = "Veyra sedang berpikir...";
+    chat.appendChild(aiMsg);
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Terjadi kesalahan");
+        }
+
+        aiMsg.textContent = data.reply || "Veyra belum memberikan jawaban.";
+
+    } catch (error) {
+        aiMsg.textContent = "Gagal: " + error.message;
+    }
+
+    input.disabled = false;
+    input.focus();
+    chat.scrollTop = chat.scrollHeight;
+});
+</script>
+</body>
+</html>
+
